@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: fact_health_outcomes
+    description: "Health outcomes fact table derived from CDC BRFSS 2023"
+    columns:
+      - name: state_code
+        tests:
+          - not_null
+      - name: health_risk_segment
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['low_risk', 'medium_risk', 'high_risk', 'unknown']
+
+  - name: fact_survey_responses
+    description: "Developer survey fact table derived from Stack Overflow 2023"
+    columns:
+      - name: response_id
+        tests:
+          - not_null
+          - unique
+      - name: employment_category
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['full_time', 'part_time', 'freelance', 'other']

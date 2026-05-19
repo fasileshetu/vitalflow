@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    database: vitalflow-496409
+    schema: raw
+    tables:
+      - name: stackoverflow_survey
+      - name: brfss_2023

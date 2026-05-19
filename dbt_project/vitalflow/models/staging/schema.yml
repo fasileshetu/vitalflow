@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: stg_brfss
+    description: "Staged CDC BRFSS 2023 survey data with renamed columns"
+    columns:
+      - name: state_code
+        tests:
+          - not_null
+      - name: interview_year
+        tests:
+          - not_null
+
+  - name: stg_stackoverflow
+    description: "Staged Stack Overflow 2023 Developer Survey data with renamed columns"
+    columns:
+      - name: response_id
+        tests:
+          - not_null
+          - unique
