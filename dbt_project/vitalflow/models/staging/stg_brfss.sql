@@ -5,10 +5,9 @@ with source as (
 renamed as (
     select
         state_code,
-        interview_year,
+        interview_date,
         sex,
         age_group,
-        race,
         education,
         income,
         general_health,

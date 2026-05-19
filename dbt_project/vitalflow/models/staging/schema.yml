@@ -7,7 +7,7 @@ models:
       - name: state_code
         tests:
           - not_null
-      - name: interview_year
+      - name: interview_date
         tests:
           - not_null
 

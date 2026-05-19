@@ -6,10 +6,9 @@ final as (
     select
         -- Demographics
         state_code,
-        interview_year,
+        interview_date,
         sex,
         age_group,
-        race,
         education,
         income,
 

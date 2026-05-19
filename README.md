@@ -12,70 +12,79 @@ Raw Data (CDC BRFSS + Stack Overflow)
         │
         ▼
   PySpark Ingestion
-  (schema enforcement, partitioning)
+  (schema enforcement, fixed-width parsing, column sanitization)
         │
         ▼
   BigQuery — raw layer
+  (brfss_2023, stackoverflow_survey)
         │
         ▼
   dbt Transformations
   (staging → marts)
         │
         ▼
-  BigQuery — marts layer
-  (fact/dim tables)
+  BigQuery — staging layer
+  (stg_brfss, stg_stackoverflow, fact_health_outcomes, fact_survey_responses)
         │
         ▼
-  SQL Analytics          Python ML Layer
-  (cohort analysis,      (scikit-learn
-  window functions)       classification)
+  SQL Analytics               Python ML Layer
+  (cohort analysis,           (scikit-learn
+  window functions,            classification)
+  behavioral trends)
 
 ---
 
 ## Tech Stack
 
-| Layer | Tool |
-|---|---|
-| Ingestion | PySpark |
-| Warehouse | BigQuery |
-| Transformation | dbt |
-| Analytics | SQL (BigQuery) |
-| ML | Python, scikit-learn |
-| Version Control | Git / GitHub |
+| Layer          | Tool                  |
+|----------------|-----------------------|
+| Ingestion      | PySpark 3.5.1         |
+| Warehouse      | BigQuery (us-west2)   |
+| Transformation | dbt 1.11              |
+| Analytics      | SQL (BigQuery)        |
+| ML             | Python, scikit-learn  |
+| Version Control| Git / GitHub          |
+| Language       | Python 3.11           |
 
 ---
 
 ## Datasets
 
-| Dataset | Source | Records |
-|---|---|---|
-| CDC BRFSS 2023 | [CDC](https://www.cdc.gov/brfss/annual_data/annual_2023.html) | 433,323 |
-| Stack Overflow Developer Survey 2023 | [Kaggle](https://www.kaggle.com/datasets/stackoverflow/stack-overflow-2023-developers-survey) | 65,000+ |
+| Dataset                              | Source                                                                                          | Records |
+|--------------------------------------|-------------------------------------------------------------------------------------------------|---------|
+| CDC BRFSS 2023                       | [CDC](https://www.cdc.gov/brfss/annual_data/annual_2023.html)                                   | 433,323 |
+| Stack Overflow Developer Survey 2023 | [Kaggle](https://www.kaggle.com/datasets/stackoverflow/stack-overflow-2023-developers-survey)   | 89,184  |
 
 ---
 
 ## Project Structure
 
 vitalflow-analytics/
-├── ingestion/              # PySpark ingestion scripts
-│   ├── ingest_brfss.py
-│   └── ingest_stackoverflow.py
-├── dbt_project/            # dbt transformation models
-│   ├── models/
-│   │   ├── staging/
-│   │   └── marts/
-│   ├── tests/
-│   └── dbt_project.yml
-├── analysis/               # SQL analytics queries
-│   ├── cohort_analysis.sql
-│   ├── health_by_profession.sql
-│   └── demographic_trends.sql
-├── ml/                     # Python ML layer
-│   └── health_risk_classifier.ipynb
+├── ingestion/
+│   ├── ingest_brfss.py           # PySpark fixed-width parser for CDC BRFSS data
+│   └── ingest_stackoverflow.py   # PySpark CSV ingestion for SO survey data
+├── dbt_project/
+│   └── vitalflow/
+│       ├── models/
+│       │   ├── staging/
+│       │   │   ├── stg_brfss.sql
+│       │   │   ├── stg_stackoverflow.sql
+│       │   │   ├── sources.yml
+│       │   │   └── schema.yml
+│       │   └── marts/
+│       │       ├── fact_health_outcomes.sql
+│       │       ├── fact_survey_responses.sql
+│       │       └── schema.yml
+│       └── dbt_project.yml
+├── analysis/
+│   ├── health_by_profession.sql  # Health risk distribution by income group
+│   ├── demographic_trends.sql    # State-level behavioral health trends
+│   └── cohort_analysis.sql       # Behavioral cohort analysis with NTILE, PERCENT_RANK
+├── ml/                           # Python ML layer (in progress)
 ├── data/
-│   └── raw/                # Raw source data (not committed)
-├── .env                    # Environment variables (not committed)
-├── gcp-key.json            # GCP service account key (not committed)
+│   └── raw/                      # Raw source data (not committed)
+├── .env                          # Environment variables (not committed)
+├── gcp-key.json                  # GCP service account key (not committed)
 └── README.md
 
 ---
@@ -83,13 +92,42 @@ vitalflow-analytics/
 ## Getting Started
 
 ### Prerequisites
-- Python 3.9+
-- Java 8+ (required for PySpark)
+- Python 3.11
+- Java 17 (required for PySpark)
 - Google Cloud account with BigQuery enabled
 - dbt CLI
 
 ---
 
-## License
+## Key Findings
 
+- **Income & Health Risk:** Lower income groups (group 1) show nearly 3x higher rates of high-risk health outcomes compared to higher income groups
+- **State Variation:** Puerto Rico (state 72) has the highest high-risk rate at 32.92%; Washington DC (state 11) has the lowest at 13.19% with the highest exercise rate at 84.53%
+- **Exercise Impact:** Low-risk cohorts have exercise rates of 81-83% vs 45-47% in high-risk cohorts — a clear behavioral differentiator
+- **Developer Workforce:** 89,184 developer survey responses analyzed across employment type, compensation, and tech stack preferences
+
+---
+
+## dbt Models
+
+| Model                    | Type  | Rows    | Description                                      |
+|--------------------------|-------|---------|--------------------------------------------------|
+| `stg_brfss`              | View  | 433,323 | Staged CDC BRFSS data with renamed columns       |
+| `stg_stackoverflow`      | View  | 89,184  | Staged Stack Overflow survey data                |
+| `fact_health_outcomes`   | Table | 432,100 | Health outcomes fact table with risk segmentation|
+| `fact_survey_responses`  | Table | 89,184  | Developer survey fact table                      |
+
+**Test coverage:** 11/11 tests passing (not_null, unique, accepted_values)
+
+---
+
+## SQL Analytics
+
+| Query                       | Techniques Used                              | Key Insight                                        |
+|-----------------------------|----------------------------------------------|----------------------------------------------------|
+| `health_by_profession.sql`  | CTEs, window functions, nested aggregations  | Health risk varies significantly by income group   |
+| `demographic_trends.sql`    | CTEs, RANK, LAG, PARTITION BY                | State-level health behavior ranking and comparison |
+| `cohort_analysis.sql`       | CTEs, NTILE, PERCENT_RANK, window functions  | Behavioral patterns within health risk cohorts     |
+
+## License
 This project uses publicly available datasets. CDC BRFSS data is public domain. Stack Overflow survey data is licensed under [ODbL](https://opendatacommons.org/licenses/odbl/).
