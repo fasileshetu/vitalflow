@@ -4,28 +4,24 @@ with brfss as (
 
 final as (
     select
-        -- Demographics
         state_code,
-        interview_date,
+        interview_year,
         sex,
         age_group,
         education,
         income,
-
-        -- Health outcomes
         general_health,
         physical_health_days,
         mental_health_days,
         bmi_category,
+        bmi,
         diabetes,
         heart_disease,
         asthma,
-
-        -- Behaviors
+        race,
         exercise,
         smoking_status,
 
-        -- Health risk score (simple composite)
         case
             when general_health in ('1', '2') then 'low_risk'
             when general_health = '3' then 'medium_risk'

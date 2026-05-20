@@ -5,7 +5,7 @@ with source as (
 renamed as (
     select
         state_code,
-        interview_date,
+        interview_year,
         sex,
         age_group,
         education,
@@ -16,9 +16,11 @@ renamed as (
         exercise,
         smoking_status,
         bmi_category,
+        bmi,
         diabetes,
         heart_disease,
-        asthma
+        asthma,
+        race
     from source
 )
 

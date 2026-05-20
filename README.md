@@ -101,21 +101,22 @@ vitalflow-analytics/
 
 ## Key Findings
 
-- **Income & Health Risk:** Lower income groups (group 1) show nearly 3x higher rates of high-risk health outcomes compared to higher income groups
+- **Income & Health Risk:** Lower income groups show nearly 3x higher rates of high-risk health outcomes compared to higher income groups
 - **State Variation:** Puerto Rico (state 72) has the highest high-risk rate at 32.92%; Washington DC (state 11) has the lowest at 13.19% with the highest exercise rate at 84.53%
 - **Exercise Impact:** Low-risk cohorts have exercise rates of 81-83% vs 45-47% in high-risk cohorts — a clear behavioral differentiator
 - **Developer Workforce:** 89,184 developer survey responses analyzed across employment type, compensation, and tech stack preferences
+- **ML Model:** Random Forest binary classifier trained on 308K records achieving 86.49% accuracy predicting high-risk health outcomes from 9 behavioral features (exercise, smoking, physical/mental health days, BMI, age, education, income, state)
 
 ---
 
 ## dbt Models
 
-| Model                    | Type  | Rows    | Description                                      |
-|--------------------------|-------|---------|--------------------------------------------------|
-| `stg_brfss`              | View  | 433,323 | Staged CDC BRFSS data with renamed columns       |
-| `stg_stackoverflow`      | View  | 89,184  | Staged Stack Overflow survey data                |
-| `fact_health_outcomes`   | Table | 432,100 | Health outcomes fact table with risk segmentation|
-| `fact_survey_responses`  | Table | 89,184  | Developer survey fact table                      |
+| Model                   | Type  | Rows    | Description                                          |
+|-------------------------|-------|---------|------------------------------------------------------|
+| `stg_brfss`             | View  | 433,323 | Staged CDC BRFSS data with renamed columns           |
+| `stg_stackoverflow`     | View  | 89,184  | Staged Stack Overflow survey data                    |
+| `fact_health_outcomes`  | Table | 432,100 | Health outcomes fact table with risk segmentation    |
+| `fact_survey_responses` | Table | 89,184  | Developer survey fact table                          |
 
 **Test coverage:** 11/11 tests passing (not_null, unique, accepted_values)
 

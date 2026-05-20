@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -28,6 +27,10 @@ SELECT
     smoking_status,
     physical_health_days,
     mental_health_days,
+    bmi_category,
+    age_group,
+    education,
+    income,
     state_code,
     CASE 
         WHEN health_risk_segment = 'high_risk' THEN 1 
@@ -39,6 +42,10 @@ WHERE health_risk_segment != 'unknown'
     AND smoking_status != ' '
     AND physical_health_days != '  '
     AND mental_health_days != '  '
+    AND bmi_category != ' '
+    AND age_group != '  '
+    AND education != ' '
+    AND income != '  '
 """
 
 df = client.query(query).to_dataframe()
@@ -47,20 +54,38 @@ print(f"Records pulled: {len(df)}")
 # ── 2. Feature engineering ────────────────────────────────────
 print("\nEngineering features...")
 
-# Convert to numeric
-df["exercise_num"]       = pd.to_numeric(df["exercise"], errors="coerce")
-df["smoking_num"]        = pd.to_numeric(df["smoking_status"], errors="coerce")
-df["state_num"]          = pd.to_numeric(df["state_code"], errors="coerce")
+df["exercise_num"]        = pd.to_numeric(df["exercise"], errors="coerce")
+df["smoking_num"]         = pd.to_numeric(df["smoking_status"], errors="coerce")
 df["physical_health_num"] = pd.to_numeric(df["physical_health_days"], errors="coerce")
 df["mental_health_num"]   = pd.to_numeric(df["mental_health_days"], errors="coerce")
+df["bmi_num"]             = pd.to_numeric(df["bmi_category"], errors="coerce")
+df["age_num"]             = pd.to_numeric(df["age_group"], errors="coerce")
+df["education_num"]       = pd.to_numeric(df["education"], errors="coerce")
+df["income_num"]          = pd.to_numeric(df["income"], errors="coerce")
+df["state_num"]           = pd.to_numeric(df["state_code"], errors="coerce")
 
-# Drop rows with nulls after conversion
 features = [
     "exercise_num",
     "smoking_num",
     "physical_health_num",
     "mental_health_num",
+    "bmi_num",
+    "age_num",
+    "education_num",
+    "income_num",
     "state_num"
+]
+
+feature_names = [
+    "Exercise",
+    "Smoking Status",
+    "Physical Health Days",
+    "Mental Health Days",
+    "BMI Category",
+    "Age Group",
+    "Education",
+    "Income",
+    "State"
 ]
 
 df_clean = df.dropna(subset=features)
@@ -116,14 +141,6 @@ plt.savefig("ml/confusion_matrix.png", dpi=150)
 print("\nConfusion matrix saved to ml/confusion_matrix.png")
 
 # ── 7. Feature importance ─────────────────────────────────────
-feature_names = [
-    "Exercise",
-    "Smoking Status",
-    "Physical Health Days",
-    "Mental Health Days",
-    "State"
-]
-
 importances = model.feature_importances_
 indices = np.argsort(importances)[::-1]
 
