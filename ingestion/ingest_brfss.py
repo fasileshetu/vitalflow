@@ -1,5 +1,4 @@
 import os
-import re
 from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, trim, substring
@@ -23,11 +22,10 @@ print("Reading BRFSS 2023 fixed-width data...")
 # Read as raw text lines
 raw_df = spark.read.text("data/raw/LLCP2023.ASC")
 
-# Extract columns by character position (1-indexed from BRFSS codebook)
-# Format: substring(col, start_position, length)
+# Extract columns by character position (1-indexed from official CDC BRFSS variable layout)
+# Source: https://www.cdc.gov/brfss/annual_data/2023/files/2023-BRFSS-Variable-Layout.pdf
 brfss_df = raw_df.select(
     substring(col("value"), 1, 2).alias("state_code"),
-    substring(col("value"), 17, 2).alias("interview_month"),
     substring(col("value"), 23, 4).alias("interview_year"),
     substring(col("value"), 88, 1).alias("sex"),
     substring(col("value"), 101, 1).alias("general_health"),
@@ -49,10 +47,9 @@ brfss_df = raw_df.select(
 # Light cleaning
 brfss_clean = brfss_df \
     .withColumn("state_code", trim(col("state_code"))) \
-    .withColumn("interview_year", trim(col("interview_year"))) \
+    .withColumn("interview_year", trim(col("interview_year")))
 
 print(f"Raw record count: {brfss_clean.count()}")
-
 print(f"Writing to BigQuery: {BQ_TABLE}")
 
 brfss_clean.write \

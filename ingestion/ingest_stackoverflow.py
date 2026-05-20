@@ -1,8 +1,8 @@
 import os
+import re
 from dotenv import load_dotenv
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, functions as F
 from pyspark.sql.functions import col, trim, when
-from pyspark.sql.types import StringType, IntegerType, FloatType
 
 load_dotenv()
 
@@ -43,16 +43,13 @@ df_clean = df \
 
 print(f"Clean record count: {df_clean.count()}")
 
-print(f"Writing to BigQuery: {BQ_TABLE}")
-
 # Sanitize column names - replace spaces and special characters with underscores
-from pyspark.sql import functions as F
-import re
-
 def clean_column_name(name):
     return re.sub(r'[^a-zA-Z0-9_]', '_', name)
 
 df_clean = df_clean.toDF(*[clean_column_name(c) for c in df_clean.columns])
+
+print(f"Writing to BigQuery: {BQ_TABLE}")
 
 df_clean.write \
     .format("bigquery") \

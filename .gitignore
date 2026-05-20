@@ -220,3 +220,6 @@ __marimo__/
 gcp-key.json
 data/
 ml/*.png
+logs/
+dbt_project/vitalflow/target/
+dbt_project/vitalflow/logs/
